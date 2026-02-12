@@ -1,50 +1,68 @@
-# Welcome to your Expo app 👋
+# React Native Passwordless Auth Assignment
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+This is a React Native application implementing a passwordless authentication flow (Email + OTP) and a session timer, built with **Expo**, **TypeScript**, and **React Native MMKV**.
 
-## Get started
+## 🚀 Setup & Run
 
-1. Install dependencies
+1.  **Install Dependencies**
+    ```bash
+    npm install
+    ```
 
-   ```bash
-   npm install
-   ```
+2.  **Run the App**
+    ```bash
+    npx expo start
+    ```
+    - Scan the QR code with Expo Go (Android/iOS).
+    - Or press `w` to run on Web (though MMKV might need a polyfill on web, mobile is preferred).
 
-2. Start the app
+## 📱 Features
 
-   ```bash
-   npx expo start
-   ```
+1.  **Email Login**: 
+    - Enters email -> Generates 6-digit OTP locally.
+    - **Note:** The OTP is shown in an **Alert** and **Console Log** for testing.
 
-In the output, you'll find options to open the app in a
+2.  **OTP Verification**:
+    - **Expiry**: OTP fits 60 seconds validity window.
+    - **Lockout**: 3 failed attempts blocks the email.
+    - **Resend**: Invalidates old OTP, resets attempts.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+3.  **Session Timer**:
+    - Shows live duration (MM:SS).
+    - **Background Safe**: Timer is calculated based on `loginTimestamp` vs `Date.now()`, ensuring accuracy even if the app changes state.
+    - **Persisted**: Timer does not reset on re-renders.
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## 🛠️ Tech Stack & Architecture
 
-## Get a fresh project
+-   **Framework**: Expo (React Native)
+-   **Language**: TypeScript
+-   **Storage/Analytics**: `react-native-mmkv`
+-   **Navigation**: React Navigation
 
-When you're ready, run:
+### Architecture Decisions
+-   **Services (`src/services/`)**: 
+    -   `otpManager.ts`: Pure TypeScript logic for OTP generation and validation. zero UI dependencies.
+    -   `analytics.ts`: Wrapper around MMKV to log events.
+-   **Hooks (`src/hooks/`)**:
+    -   `useSessionTimer.ts`: Custom hook managing the interval and date math.
+-   **Screens (`src/screens/`)**:
+    -   UI only. Delegates logic to services and hooks.
 
-```bash
-npm run reset-project
-```
+## 📦 External SDK Choice: React Native MMKV
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+I chose **React Native MMKV** for the "External SDK" requirement.
+**Why?**
+1.  **Performance**: It is the fastest key-value storage for React Native.
+2.  **Zero Config**: Unlike Firebase or Sentry, it runs immediately after installation without needing API keys or `google-services.json`. This ensures you can review the code instantly.
+3.  **Persistence**: usage of `MMKV` ensures logs and state can be persisted synchronously.
 
-## Learn more
+## 🤖 AI Usage Declaration
 
-To learn more about developing your project with Expo, look at the following resources:
+**GPT Assistance:**
+-   Used to generate standard boilerplate for `NavigationContainer`.
+-   Used to double-check the `setInterval` cleanup logic in `useEffect`.
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+**My Implementation:**
+-   Designed the architecture (Service layer separation).
+-   Implemented the specific business logic for OTP (Map-based storage, expiry checks).
+-   Created the custom hook for timer accuracy (timestamp diff vs interval increment).
