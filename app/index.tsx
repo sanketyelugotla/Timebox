@@ -1,12 +1,24 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, SafeAreaView, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import {
+    View,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    StyleSheet,
+    SafeAreaView,
+    KeyboardAvoidingView,
+    Platform,
+    ActivityIndicator,
+} from 'react-native';
 import { useRouter } from 'expo-router';
 import { otpManager } from '../src/services/otpManager';
 import { sessionStorage } from '../src/services/sessionStorage';
+import CustomToast from '../src/components/CustomToast';
 
 export default function LoginScreen() {
     const [email, setEmail] = useState('');
     const [isCheckingSession, setIsCheckingSession] = useState(true);
+    const [toast, setToast] = useState({ visible: false, type: 'info' as 'success' | 'error' | 'info', title: '', message: '' });
     const router = useRouter();
 
     // Check for existing session on mount (auto-login)
@@ -28,14 +40,10 @@ export default function LoginScreen() {
         checkSession();
     }, []);
 
-    // Show loading while checking for existing session
-    if (isCheckingSession) {
-        return (
-            <View style={styles.loader}>
-                <ActivityIndicator size="large" color="#007AFF" />
-            </View>
-        );
-    }
+    const showToast = useCallback((type: 'success' | 'error' | 'info', title: string, message: string) => {
+        setToast({ visible: true, type, title, message });
+    }, []);
+
     const validateEmail = (email: string) => {
         return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
     };
@@ -44,53 +52,91 @@ export default function LoginScreen() {
         const trimmedEmail = email.trim();
 
         if (!trimmedEmail) {
-            Alert.alert('Error', 'Please enter an email address.');
+            showToast('error', 'Missing Email', 'Please enter your email address.');
             return;
         }
 
         if (!validateEmail(trimmedEmail)) {
-            Alert.alert('Error', 'Please enter a valid email address.');
+            showToast('error', 'Invalid Email', 'Please enter a valid email address.');
             return;
         }
 
         if (otpManager.isBlocked(trimmedEmail)) {
-            Alert.alert('Access Denied', 'Too many failed attempts. Please try again later.');
+            showToast('error', 'Blocked', 'Too many failed attempts. Please try again later.');
             return;
         }
 
         const otp = otpManager.generateOtp(trimmedEmail);
-        // For testing purposes, we show the OTP in an alert
-        Alert.alert('OTP Generated', `Your OTP is: ${otp}`, [
-            {
-                text: 'OK',
-                onPress: () => router.push({ pathname: '/otp', params: { email: trimmedEmail } })
-            }
-        ]);
+        showToast('success', 'OTP Sent!', `Your verification code is: ${otp}`);
+
+        // Navigate after a short delay so user can see the toast
+        setTimeout(() => {
+            router.push({ pathname: '/otp', params: { email: trimmedEmail } });
+        }, 1800);
     };
+
+    if (isCheckingSession) {
+        return (
+            <View style={styles.loader}>
+                <ActivityIndicator size="large" color="#6366F1" />
+            </View>
+        );
+    }
 
     return (
         <SafeAreaView style={styles.container}>
+            <CustomToast
+                visible={toast.visible}
+                type={toast.type}
+                title={toast.title}
+                message={toast.message}
+                onDismiss={() => setToast((prev) => ({ ...prev, visible: false }))}
+            />
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 style={styles.keyboardView}
             >
                 <View style={styles.content}>
+                    {/* Header Illustration Area */}
+                    <View style={styles.iconContainer}>
+                        <View style={styles.iconCircle}>
+                            <Text style={styles.iconEmoji}>✉️</Text>
+                        </View>
+                    </View>
+
                     <Text style={styles.title}>Welcome Back</Text>
-                    <Text style={styles.subtitle}>Enter your email to sign in</Text>
+                    <Text style={styles.subtitle}>
+                        Sign in with your email to continue.{'\n'}We'll send you a one-time verification code.
+                    </Text>
 
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Email Address"
-                        placeholderTextColor="#888"
-                        keyboardType="email-address"
-                        autoCapitalize="none"
-                        value={email}
-                        onChangeText={setEmail}
-                    />
+                    {/* Email Input */}
+                    <View style={styles.inputWrapper}>
+                        <Text style={styles.inputLabel}>Email Address</Text>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="you@example.com"
+                            placeholderTextColor="#9CA3AF"
+                            keyboardType="email-address"
+                            autoCapitalize="none"
+                            autoCorrect={false}
+                            value={email}
+                            onChangeText={setEmail}
+                        />
+                    </View>
 
-                    <TouchableOpacity style={styles.button} onPress={handleSendOtp}>
-                        <Text style={styles.buttonText}>Send OTP</Text>
+                    {/* Send OTP Button */}
+                    <TouchableOpacity
+                        style={[styles.button, !email.trim() && styles.buttonDisabled]}
+                        onPress={handleSendOtp}
+                        activeOpacity={0.85}
+                    >
+                        <Text style={styles.buttonText}>Send Verification Code</Text>
                     </TouchableOpacity>
+
+                    {/* Footer */}
+                    <Text style={styles.footerText}>
+                        By continuing, you agree to our Terms of Service
+                    </Text>
                 </View>
             </KeyboardAvoidingView>
         </SafeAreaView>
@@ -100,54 +146,99 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: '#FFFFFF',
+    },
+    loader: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#FFFFFF',
     },
     keyboardView: {
         flex: 1,
     },
     content: {
         flex: 1,
-        padding: 24,
+        paddingHorizontal: 28,
         justifyContent: 'center',
+    },
+    iconContainer: {
+        alignItems: 'center',
+        marginBottom: 24,
+    },
+    iconCircle: {
+        width: 80,
+        height: 80,
+        borderRadius: 40,
+        backgroundColor: '#EEF2FF',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: '#E0E7FF',
+    },
+    iconEmoji: {
+        fontSize: 36,
     },
     title: {
         fontSize: 28,
-        fontWeight: 'bold',
+        fontWeight: '700',
+        color: '#111827',
+        textAlign: 'center',
         marginBottom: 8,
-        color: '#333',
+        letterSpacing: -0.5,
     },
     subtitle: {
-        fontSize: 16,
-        color: '#666',
-        marginBottom: 32,
+        fontSize: 15,
+        color: '#6B7280',
+        textAlign: 'center',
+        marginBottom: 36,
+        lineHeight: 22,
+    },
+    inputWrapper: {
+        marginBottom: 20,
+    },
+    inputLabel: {
+        fontSize: 13,
+        fontWeight: '600',
+        color: '#374151',
+        marginBottom: 8,
+        letterSpacing: 0.3,
     },
     input: {
-        height: 50,
-        borderWidth: 1,
-        borderColor: '#ddd',
-        borderRadius: 8,
+        height: 52,
+        borderWidth: 1.5,
+        borderColor: '#D1D5DB',
+        borderRadius: 12,
         paddingHorizontal: 16,
         fontSize: 16,
-        marginBottom: 24,
-        color: '#333',
-        backgroundColor: '#f9f9f9',
+        color: '#111827',
+        backgroundColor: '#F9FAFB',
     },
     button: {
-        backgroundColor: '#007AFF',
-        height: 50,
-        borderRadius: 8,
+        backgroundColor: '#6366F1',
+        height: 52,
+        borderRadius: 12,
         justifyContent: 'center',
         alignItems: 'center',
+        shadowColor: '#6366F1',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.25,
+        shadowRadius: 8,
+        elevation: 4,
+    },
+    buttonDisabled: {
+        opacity: 0.6,
     },
     buttonText: {
-        color: '#fff',
+        color: '#FFFFFF',
         fontSize: 16,
         fontWeight: '600',
+        letterSpacing: 0.3,
     },
-    loader: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: 'white',
+    footerText: {
+        fontSize: 12,
+        color: '#9CA3AF',
+        textAlign: 'center',
+        marginTop: 24,
     },
 });
