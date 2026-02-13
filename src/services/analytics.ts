@@ -1,17 +1,15 @@
-import { MMKV } from 'react-native-mmkv';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AnalyticsEvent } from '../types/auth';
-
-export const storage = new MMKV();
 
 class AnalyticsService {
     private static STORAGE_KEY = 'analytics_logs';
 
     /**
-     * Logs an event to MMKV storage and Console.
+     * Logs an event to AsyncStorage and Console.
      * @param event The event name
      * @param details Optional metadata
      */
-    log(event: AnalyticsEvent, details?: Record<string, any>) {
+    async log(event: AnalyticsEvent, details?: Record<string, any>) {
         const timestamp = new Date().toISOString();
         const logEntry = {
             event,
@@ -19,29 +17,37 @@ class AnalyticsService {
             details,
         };
 
-        // 1. Log to Console (for immediate developer feedback)
+        // 1. Log to Console
         console.log(`[Analytics] ${event}`, details || '');
 
-        // 2. Persist to MMKV (simulate external SDK)
-        const existingLogsStr = storage.getString(AnalyticsService.STORAGE_KEY);
-        const logs = existingLogsStr ? JSON.parse(existingLogsStr) : [];
-        logs.push(logEntry);
-        storage.set(AnalyticsService.STORAGE_KEY, JSON.stringify(logs));
+        // 2. Persist to AsyncStorage (Async)
+        try {
+            const existingLogsStr = await AsyncStorage.getItem(AnalyticsService.STORAGE_KEY);
+            const logs = existingLogsStr ? JSON.parse(existingLogsStr) : [];
+            logs.push(logEntry);
+            await AsyncStorage.setItem(AnalyticsService.STORAGE_KEY, JSON.stringify(logs));
+        } catch (error) {
+            console.error('Failed to save analytics log:', error);
+        }
     }
 
     /**
-     * Retrieve all logs (for debugging purposes)
+     * Retrieve all logs
      */
-    getLogs() {
-        const logs = storage.getString(AnalyticsService.STORAGE_KEY);
-        return logs ? JSON.parse(logs) : [];
+    async getLogs() {
+        try {
+            const logs = await AsyncStorage.getItem(AnalyticsService.STORAGE_KEY);
+            return logs ? JSON.parse(logs) : [];
+        } catch (error) {
+            return [];
+        }
     }
 
     /**
      * Clear logs
      */
-    clearLogs() {
-        storage.delete(AnalyticsService.STORAGE_KEY);
+    async clearLogs() {
+        await AsyncStorage.removeItem(AnalyticsService.STORAGE_KEY);
     }
 }
 
