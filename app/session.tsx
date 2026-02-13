@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, Alert } from 'r
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSessionTimer } from '../src/hooks/useSessionTimer';
 import { analytics } from '../src/services/analytics';
+import { sessionStorage } from '../src/services/sessionStorage';
 
 export default function SessionScreen() {
     const router = useRouter();
@@ -19,8 +20,9 @@ export default function SessionScreen() {
             {
                 text: 'Logout',
                 style: 'destructive',
-                onPress: () => {
+                onPress: async () => {
                     analytics.log('LOGOUT', { email, duration: formattedDuration });
+                    await sessionStorage.clear(); // Clear persisted session
                     router.replace('/'); // Navigate back to index (Login)
                 }
             }

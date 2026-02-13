@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, SafeAreaView, Platform, KeyboardAvoidingView } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { otpManager } from '../src/services/otpManager';
+import { sessionStorage } from '../src/services/sessionStorage';
 
 export default function OtpScreen() {
     const [otp, setOtp] = useState('');
@@ -9,7 +10,7 @@ export default function OtpScreen() {
     const params = useLocalSearchParams();
     const email = params.email as string;
 
-    const handleVerify = () => {
+    const handleVerify = async () => {
         if (otp.length !== 6) {
             Alert.alert('Invalid OTP', 'Please enter a 6-digit code.');
             return;
@@ -18,11 +19,14 @@ export default function OtpScreen() {
         const result = otpManager.validateOtp(email, otp);
 
         if (result.success) {
+            const loginTimestamp = Date.now();
+            // Persist session so we can auto-login on app restart
+            await sessionStorage.save({ email, loginTimestamp });
             router.replace({
                 pathname: '/session',
                 params: {
                     email,
-                    loginTimestamp: Date.now().toString() // params must be strings usually
+                    loginTimestamp: loginTimestamp.toString()
                 }
             });
         } else {

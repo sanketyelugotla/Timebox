@@ -1,12 +1,41 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, SafeAreaView, KeyboardAvoidingView, Platform } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, SafeAreaView, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { otpManager } from '../src/services/otpManager';
+import { sessionStorage } from '../src/services/sessionStorage';
 
 export default function LoginScreen() {
     const [email, setEmail] = useState('');
+    const [isCheckingSession, setIsCheckingSession] = useState(true);
     const router = useRouter();
 
+    // Check for existing session on mount (auto-login)
+    useEffect(() => {
+        const checkSession = async () => {
+            const session = await sessionStorage.load();
+            if (session) {
+                router.replace({
+                    pathname: '/session',
+                    params: {
+                        email: session.email,
+                        loginTimestamp: session.loginTimestamp.toString(),
+                    },
+                });
+            } else {
+                setIsCheckingSession(false);
+            }
+        };
+        checkSession();
+    }, []);
+
+    // Show loading while checking for existing session
+    if (isCheckingSession) {
+        return (
+            <View style={styles.loader}>
+                <ActivityIndicator size="large" color="#007AFF" />
+            </View>
+        );
+    }
     const validateEmail = (email: string) => {
         return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
     };
@@ -114,5 +143,11 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: 16,
         fontWeight: '600',
+    },
+    loader: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'white',
     },
 });
