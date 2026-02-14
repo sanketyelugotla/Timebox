@@ -49,8 +49,6 @@ This is a React Native application implementing a passwordless authentication fl
   - `analytics.ts`: Wrapper around MMKV to log events.
 - **Hooks (`/hooks/`)**:
   - `useSessionTimer.ts`: Custom hook managing the interval and date math.
-- **Screens (`/screens/`)**:
-  - UI only. Delegates logic to services and hooks.
 - **Screens**:
   - Implemented as route components directly under the `app/` directory.
 
