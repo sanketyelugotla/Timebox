@@ -4,6 +4,21 @@ This is a React Native application implementing a passwordless authentication fl
 
 ## 🚀 Setup & Run
 
+### Prerequisites
+
+- Git installed and available on your PATH (`git --version`).
+- Node.js (LTS) — recommended v16 or newer (`node --version`).
+- `npm` (bundled with Node) — verify with `npm --version`.
+
+You can install Node.js from the official site or via a version manager such as `nvm`.
+
+### Clone the repository
+
+```bash
+git clone https://github.com/sanketyelugotla/Timebox.git
+cd Timebox
+```
+
 1. **Install Dependencies**
 
    ```bash
