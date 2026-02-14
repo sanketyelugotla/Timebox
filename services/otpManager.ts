@@ -9,10 +9,8 @@ const MAX_ATTEMPTS = 3;
 const otpStore = new Map<string, OtpData>();
 
 export const otpManager = {
-    /**
-     * Generates a new 6-digit OTP for the given email.
-     * Invalidates any previous OTP.
-     */
+    // Generates a new 6-digit OTP for the given email.
+    // Invalidates any previous OTP.
     generateOtp: (email: string): string => {
         const code = Math.floor(100000 + Math.random() * 900000).toString();
 
@@ -30,10 +28,8 @@ export const otpManager = {
         return code;
     },
 
-    /**
-     * Validates the OTP for the given email.
-     * Returns matching result or error message.
-     */
+    // Validates the OTP for the given email.
+    // Returns matching result or error message.
     validateOtp: (email: string, inputCode: string): { success: boolean; error?: string } => {
         const data = otpStore.get(email);
 
@@ -70,18 +66,14 @@ export const otpManager = {
             return { success: false, error: `Incorrect OTP. ${remaining} attempts remaining.` };
         }
 
-        // Success!
-        // We optionally cleanup the OTP so it can't be reused, 
-        // though the prompt doesn't strictly say "single use", it's security best practice.
+        // We cleanup the OTP so it can't be reused, 
         otpStore.delete(email);
 
         analytics.log('OTP_VALIDATION_SUCCESS', { email });
         return { success: true };
     },
 
-    /**
-     * Helper to check if an email is currently blocked (optional UI helper)
-     */
+    // Helper to check if an email is currently blocked (optional UI helper)
     isBlocked: (email: string): boolean => {
         const data = otpStore.get(email);
         return !!(data && data.attempts >= MAX_ATTEMPTS);

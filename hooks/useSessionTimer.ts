@@ -1,9 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 
 // Formats elapsed seconds into a readable duration:
-//  - Under 1 hour:  MM:SS   (e.g. 04:32)
-//  - 1–24 hours:    HH:MM   (e.g. 02:15)
-//  - 24+ hours:     Xd HH:MM (e.g. 2d 05:30)
 const formatTime = (totalSeconds: number): string => {
     const days = Math.floor(totalSeconds / 86400);
     const hours = Math.floor((totalSeconds % 86400) / 3600);

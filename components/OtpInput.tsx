@@ -1,11 +1,10 @@
 import React, { useRef, useCallback } from 'react';
 import {
     View,
-    Text,
     TextInput,
     StyleSheet,
     NativeSyntheticEvent,
-    TextInputKeyPressEventData,
+    TextInputKeyPressEvent,
 } from 'react-native';
 
 interface OtpInputProps {
@@ -14,11 +13,6 @@ interface OtpInputProps {
     onChange: (value: string) => void;
 }
 
-/**
- * A row of individual OTP digit boxes.
- * Typing a digit auto-advances to the next box.
- * Backspace on an empty box moves back to the previous one.
- */
 export default function OtpInput({ length = 6, value, onChange }: OtpInputProps) {
     const inputsRef = useRef<(TextInput | null)[]>([]);
     const digits = value.split('').concat(Array(length).fill('')).slice(0, length);
@@ -42,7 +36,7 @@ export default function OtpInput({ length = 6, value, onChange }: OtpInputProps)
     );
 
     const handleKeyPress = useCallback(
-        (e: NativeSyntheticEvent<TextInputKeyPressEventData>, index: number) => {
+        (e: NativeSyntheticEvent<TextInputKeyPressEvent>, index: number) => {
             if (e.nativeEvent.key === 'Backspace' && !digits[index] && index > 0) {
                 // Move back on backspace if current box is empty
                 inputsRef.current[index - 1]?.focus();

@@ -3,14 +3,10 @@ import { SessionData } from '../types/auth';
 
 const SESSION_KEY = 'active_session';
 
-/**
- * Service to persist and retrieve session data using AsyncStorage.
- * This enables auto-login when the app restarts.
- */
+// Service to persist and retrieve session data using AsyncStorage.
+// This enables auto-login when the app restarts.
 export const sessionStorage = {
-    /**
-     * Save session data after successful OTP verification.
-     */
+    // Save session data after successful OTP verification.
     save: async (data: SessionData): Promise<void> => {
         try {
             await AsyncStorage.setItem(SESSION_KEY, JSON.stringify(data));
@@ -19,9 +15,7 @@ export const sessionStorage = {
         }
     },
 
-    /**
-     * Load existing session (returns null if no session exists).
-     */
+    // Load existing session (returns null if no session exists).
     load: async (): Promise<SessionData | null> => {
         try {
             const raw = await AsyncStorage.getItem(SESSION_KEY);
@@ -32,9 +26,7 @@ export const sessionStorage = {
         }
     },
 
-    /**
-     * Clear session on logout.
-     */
+    // Clear session on logout.
     clear: async (): Promise<void> => {
         try {
             await AsyncStorage.removeItem(SESSION_KEY);

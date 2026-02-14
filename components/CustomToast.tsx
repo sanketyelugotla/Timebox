@@ -9,7 +9,6 @@ interface CustomToastProps {
     title: string;
     message: string;
     onDismiss: () => void;
-    /** Auto-dismiss after this many ms. Set 0 to disable. Default: 3000 */
     duration?: number;
 }
 
@@ -19,10 +18,6 @@ const COLORS: Record<ToastType, { bg: string; border: string; icon: string; text
     info: { bg: '#EFF6FF', border: '#93C5FD', icon: 'ℹ', text: '#1E40AF' },
 };
 
-/**
- * A sleek animated toast/alert that slides in from the top.
- * Far more polished than Alert.alert().
- */
 export default function CustomToast({
     visible,
     type,

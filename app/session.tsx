@@ -4,9 +4,9 @@ import {
     Text,
     TouchableOpacity,
     StyleSheet,
-    SafeAreaView,
     Alert,
 } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSessionTimer } from '../hooks/useSessionTimer';
 import { analytics } from '../services/analytics';
@@ -64,7 +64,7 @@ export default function SessionScreen() {
                         await sessionStorage.clear();
                         showToast('success', 'Session Ended', 'You have been logged out successfully.');
                         setTimeout(() => {
-                            router.replace('/' as any);
+                            router.replace('/login' as any);
                         }, 1500);
                     },
                 },
@@ -73,7 +73,7 @@ export default function SessionScreen() {
     }, [email, formattedDuration, showToast, router]);
 
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaProvider style={styles.container}>
             <CustomToast
                 visible={toast.visible}
                 type={toast.type}
@@ -126,7 +126,7 @@ export default function SessionScreen() {
                     <Text style={styles.logoutText}>End Session</Text>
                 </TouchableOpacity>
             </View>
-        </SafeAreaView>
+        </SafeAreaProvider>
     );
 }
 

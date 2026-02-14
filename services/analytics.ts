@@ -4,11 +4,7 @@ import { AnalyticsEvent } from '../types/auth';
 class AnalyticsService {
     private static STORAGE_KEY = 'analytics_logs';
 
-    /**
-     * Logs an event to AsyncStorage and Console.
-     * @param event The event name
-     * @param details Optional metadata
-     */
+    // Logs an event to AsyncStorage and Console.
     async log(event: AnalyticsEvent, details?: Record<string, any>) {
         const timestamp = new Date().toISOString();
         const logEntry = {
@@ -31,9 +27,7 @@ class AnalyticsService {
         }
     }
 
-    /**
-     * Retrieve all logs
-     */
+    //  Retrieve all logs
     async getLogs() {
         try {
             const logs = await AsyncStorage.getItem(AnalyticsService.STORAGE_KEY);
@@ -43,9 +37,7 @@ class AnalyticsService {
         }
     }
 
-    /**
-     * Clear logs
-     */
+    // Clear logs
     async clearLogs() {
         await AsyncStorage.removeItem(AnalyticsService.STORAGE_KEY);
     }

@@ -4,10 +4,10 @@ import {
     Text,
     TouchableOpacity,
     StyleSheet,
-    SafeAreaView,
     Platform,
     KeyboardAvoidingView,
 } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { otpManager } from '../services/otpManager';
 import { sessionStorage } from '../services/sessionStorage';
@@ -96,7 +96,7 @@ export default function OtpScreen() {
     };
 
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaProvider style={styles.container}>
             <CustomToast
                 visible={toast.visible}
                 type={toast.type}
@@ -153,7 +153,7 @@ export default function OtpScreen() {
                     </TouchableOpacity>
                 </View>
             </KeyboardAvoidingView>
-        </SafeAreaView>
+        </SafeAreaProvider>
     );
 }
 
