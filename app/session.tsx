@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import {
     View,
     Text,
@@ -8,18 +8,24 @@ import {
     Alert,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { useSessionTimer } from '../src/hooks/useSessionTimer';
-import { analytics } from '../src/services/analytics';
-import { sessionStorage } from '../src/services/sessionStorage';
+import { useSessionTimer } from '../hooks/useSessionTimer';
+import { analytics } from '../services/analytics';
+import { sessionStorage } from '../services/sessionStorage';
+import CustomToast from '../components/CustomToast';
 
 export default function SessionScreen() {
     const router = useRouter();
     const params = useLocalSearchParams();
+    const [toast, setToast] = useState({ visible: false, type: 'info' as 'success' | 'error' | 'info', title: '', message: '' });
 
     const email = params.email as string;
     const loginTimestamp = Number(params.loginTimestamp);
 
     const { formattedDuration, elapsedSeconds } = useSessionTimer(loginTimestamp);
+
+    const showToast = useCallback((type: 'success' | 'error' | 'info', title: string, message: string) => {
+        setToast({ visible: true, type, title, message });
+    }, []);
 
     // Derived values using useMemo
     const startTimeString = useMemo(() => {
@@ -45,22 +51,36 @@ export default function SessionScreen() {
     }, [elapsedSeconds]);
 
     const handleLogout = useCallback(() => {
-        Alert.alert('End Session', 'Are you sure you want to log out?', [
-            { text: 'Cancel', style: 'cancel' },
-            {
-                text: 'Logout',
-                style: 'destructive',
-                onPress: async () => {
-                    analytics.log('LOGOUT', { email, duration: formattedDuration });
-                    await sessionStorage.clear();
-                    router.replace('/');
+        Alert.alert(
+            'End Session',
+            `You've been logged in for ${formattedDuration}. Are you sure you want to end your session?`,
+            [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                    text: 'End Session',
+                    style: 'destructive',
+                    onPress: async () => {
+                        analytics.log('LOGOUT', { email, duration: formattedDuration });
+                        await sessionStorage.clear();
+                        showToast('success', 'Session Ended', 'You have been logged out successfully.');
+                        setTimeout(() => {
+                            router.replace('/' as any);
+                        }, 1500);
+                    },
                 },
-            },
-        ]);
-    }, [email, formattedDuration]);
+            ]
+        );
+    }, [email, formattedDuration, showToast, router]);
 
     return (
         <SafeAreaView style={styles.container}>
+            <CustomToast
+                visible={toast.visible}
+                type={toast.type}
+                title={toast.title}
+                message={toast.message}
+                onDismiss={() => setToast((prev) => ({ ...prev, visible: false }))}
+            />
             <View style={styles.content}>
                 {/* Header */}
                 <View style={styles.header}>

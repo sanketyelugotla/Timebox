@@ -13,7 +13,7 @@ export default function Layout() {
           animation: 'slide_from_right',
         }}
       >
-        <Stack.Screen name="index" />
+        <Stack.Screen name="login" />
         <Stack.Screen name="otp" />
         <Stack.Screen name="session" />
       </Stack>

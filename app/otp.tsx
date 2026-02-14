@@ -9,16 +9,16 @@ import {
     KeyboardAvoidingView,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { otpManager } from '../src/services/otpManager';
-import { sessionStorage } from '../src/services/sessionStorage';
-import OtpInput from '../src/components/OtpInput';
-import CustomToast from '../src/components/CustomToast';
+import { otpManager } from '../services/otpManager';
+import { sessionStorage } from '../services/sessionStorage';
+import OtpInput from '../components/OtpInput';
+import CustomToast from '../components/CustomToast';
 
 export default function OtpScreen() {
     const [otp, setOtp] = useState('');
     const [countdown, setCountdown] = useState(60);
     const [toast, setToast] = useState({ visible: false, type: 'info' as 'success' | 'error' | 'info', title: '', message: '' });
-    const countdownRef = useRef<NodeJS.Timeout | null>(null);
+    const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const router = useRouter();
     const params = useLocalSearchParams();
     const email = params.email as string;
@@ -59,7 +59,7 @@ export default function OtpScreen() {
             showToast('success', 'Verified!', 'Redirecting to your session...');
             setTimeout(() => {
                 router.replace({
-                    pathname: '/session',
+                    pathname: '/session' as any,
                     params: { email, loginTimestamp: loginTimestamp.toString() },
                 });
             }, 1200);
@@ -148,7 +148,7 @@ export default function OtpScreen() {
                     {/* Resend */}
                     <TouchableOpacity style={styles.resendButton} onPress={handleResend}>
                         <Text style={styles.resendText}>
-                            Didn't receive the code? <Text style={styles.resendLink}>Resend</Text>
+                            Didn&apos;t receive the code? <Text style={styles.resendLink}>Resend</Text>
                         </Text>
                     </TouchableOpacity>
                 </View>

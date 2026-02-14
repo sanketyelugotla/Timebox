@@ -5,15 +5,15 @@ import {
     TextInput,
     TouchableOpacity,
     StyleSheet,
-    SafeAreaView,
     KeyboardAvoidingView,
     Platform,
     ActivityIndicator,
 } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { otpManager } from '../src/services/otpManager';
-import { sessionStorage } from '../src/services/sessionStorage';
-import CustomToast from '../src/components/CustomToast';
+import { otpManager } from '../services/otpManager';
+import { sessionStorage } from '../services/sessionStorage';
+import CustomToast from '../components/CustomToast';
 
 export default function LoginScreen() {
     const [email, setEmail] = useState('');
@@ -27,7 +27,7 @@ export default function LoginScreen() {
             const session = await sessionStorage.load();
             if (session) {
                 router.replace({
-                    pathname: '/session',
+                    pathname: '/session' as any,
                     params: {
                         email: session.email,
                         loginTimestamp: session.loginTimestamp.toString(),
@@ -38,7 +38,7 @@ export default function LoginScreen() {
             }
         };
         checkSession();
-    }, []);
+    }, [router]);
 
     const showToast = useCallback((type: 'success' | 'error' | 'info', title: string, message: string) => {
         setToast({ visible: true, type, title, message });
@@ -71,7 +71,7 @@ export default function LoginScreen() {
 
         // Navigate after a short delay so user can see the toast
         setTimeout(() => {
-            router.push({ pathname: '/otp', params: { email: trimmedEmail } });
+            router.push({ pathname: '/otp' as any, params: { email: trimmedEmail } });
         }, 1800);
     };
 
@@ -84,7 +84,7 @@ export default function LoginScreen() {
     }
 
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaProvider style={styles.container}>
             <CustomToast
                 visible={toast.visible}
                 type={toast.type}
@@ -97,7 +97,7 @@ export default function LoginScreen() {
                 style={styles.keyboardView}
             >
                 <View style={styles.content}>
-                    {/* Header Illustration Area */}
+                    {/* Header */}
                     <View style={styles.iconContainer}>
                         <View style={styles.iconCircle}>
                             <Text style={styles.iconEmoji}>✉️</Text>
@@ -106,7 +106,7 @@ export default function LoginScreen() {
 
                     <Text style={styles.title}>Welcome Back</Text>
                     <Text style={styles.subtitle}>
-                        Sign in with your email to continue.{'\n'}We'll send you a one-time verification code.
+                        Sign in with your email to continue.{'\n'}We&apos;ll send you a one-time verification code.
                     </Text>
 
                     {/* Email Input */}
@@ -139,7 +139,7 @@ export default function LoginScreen() {
                     </Text>
                 </View>
             </KeyboardAvoidingView>
-        </SafeAreaView>
+        </SafeAreaProvider>
     );
 }
 
